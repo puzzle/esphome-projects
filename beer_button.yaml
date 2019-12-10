@@ -1,0 +1,29 @@
+esphome:
+  name: beer_button
+  platform: ESP8266
+  board: nodemcu
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  manual_ip:
+    static_ip: !secret beer_button_wifi_static_ip
+    gateway: !secret wifi_gateway
+    subnet: !secret wifi_subnet
+  domain: !secret wifi_domain
+
+logger:
+
+api:
+  password: !secret beer_button_api_password
+
+ota:
+  password: !secret beer_button_api_password
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D2
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Beer Button"

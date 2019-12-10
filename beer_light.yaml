@@ -1,0 +1,81 @@
+esphome:
+  name: beer_light
+  platform: ESP8266
+  board: nodemcu
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  manual_ip:
+    static_ip: !secret beer_light_wifi_static_ip
+    gateway: !secret wifi_gateway
+    subnet: !secret wifi_subnet
+  domain: !secret wifi_domain
+
+logger:
+
+api:
+  password: !secret beer_light_api_password
+
+ota:
+  password: !secret beer_light_api_password
+
+output:
+  - platform: gpio
+    pin: D0
+    id: gpio_d0
+  - platform: gpio
+    pin: D1
+    id: gpio_d1
+  - platform: gpio
+    pin: D2
+    id: gpio_d2
+  - platform: gpio
+    pin: D3
+    id: gpio_d3
+
+light:
+  - platform: binary
+    name: "Beer LED 1"
+    id: beer_led1
+    output: gpio_d0
+  - platform: binary
+    name: "Beer LED 2"
+    id: beer_led2
+    output: gpio_d1
+  - platform: binary
+    name: "Beer LED 3"
+    id: beer_led3
+    output: gpio_d3
+  - platform: binary
+    name: "Beer LED 4"
+    id: beer_led4
+    output: gpio_d2
+
+switch:
+- platform: template
+  name: "Carousel"
+  optimistic: yes
+  id: carousel
+  turn_on_action:
+  - while:
+      condition:
+        lambda: 'return true;'
+      then:
+      - light.turn_on: beer_led1
+      - delay: 50ms 
+      - light.turn_off: beer_led1
+      - light.turn_on: beer_led2
+      - delay: 50ms 
+      - light.turn_off: beer_led2
+      - light.turn_on: beer_led3
+      - delay: 50ms 
+      - light.turn_off: beer_led3
+      - light.turn_on: beer_led4
+      - delay: 50ms 
+      - light.turn_off: beer_led4
+  turn_off_action:
+  - light.turn_off: beer_led1
+  - light.turn_off: beer_led2
+  - light.turn_off: beer_led3
+  - light.turn_off: beer_led4
