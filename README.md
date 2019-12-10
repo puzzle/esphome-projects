@@ -1,4 +1,4 @@
-# Puzzle Beer Button
+# Puzzle ESPHome Projects
 
 This repository contains the documentation and code for building a "beer button", a "beer light" and more using [NodeMCUs (ESP8266)](https://www.bastelgarage.ch/esp8266-esp32/esp-boards/esp8266-nodemcu-v3-kompatibles-development-board) and [ESPHome](https://esphome.io). 
 
