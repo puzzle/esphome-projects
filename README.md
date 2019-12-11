@@ -8,7 +8,11 @@ This repository contains the documentation and code for building a "beer button"
 1. Provide a `secrets.yaml` file using `secrets.yaml.example` as a guideline
 2. Clone this repository, `cd` into its directory
 3. Connect a NodeMCU to your computer using a Micro USB cable
-4. Flash the NodeMCU using the following command or one of [ESPHome](https://esphome.io)'s own Getting Started guides: ```podman run --rm -v "${PWD}":/config:Z --device=/dev/ttyUSB0 -it esphome/esphome beerbutton.yaml run```
+4. Flash the NodeMCU using the following command or one of [ESPHome](https://esphome.io)'s own Getting Started guides:
+
+```bash
+podman run --rm -v "${PWD}":/config:Z --device=/dev/ttyUSB0 -it esphome/esphome beer_button.yaml run
+```
 
 If everything worked correctly, the ESPHome can now be flashed over-the-air and does not need to be connected via USB to the computer anymore (except perhaps for power).
 

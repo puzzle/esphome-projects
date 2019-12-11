@@ -22,11 +22,12 @@ ota:
 
 binary_sensor:
 - platform: gpio
+  name: "Sonoff Basic Button"
+  device_class: power
   pin:
     number: GPIO0
     mode: INPUT_PULLUP
     inverted: True
-  name: "Sonoff Basic Button"
   on_press:
   - switch.toggle: relay
 

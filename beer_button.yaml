@@ -21,9 +21,9 @@ ota:
   password: !secret beer_button_api_password
 
 binary_sensor:
-  - platform: gpio
-    pin:
-      number: D2
-      mode: INPUT_PULLUP
-      inverted: True
-    name: "Beer Button"
+- platform: gpio
+  pin:
+    number: D2
+    mode: INPUT_PULLUP
+    inverted: True
+  name: "Beer Button"
