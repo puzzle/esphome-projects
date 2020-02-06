@@ -16,6 +16,10 @@ api:
 ota:
   password: !secret beer_light_api_password
 
+text_sensor:
+- platform: version
+  name: "ESPHome Version"
+
 output:
   - platform: gpio
     pin: D0

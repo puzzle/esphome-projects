@@ -16,6 +16,10 @@ api:
 ota:
   password: !secret beer_button_api_password
 
+text_sensor:
+- platform: version
+  name: "ESPHome Version"
+
 binary_sensor:
 - platform: gpio
   pin:
