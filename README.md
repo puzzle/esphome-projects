@@ -14,10 +14,12 @@ This repository contains the documentation and code for building a "beer button"
 podman run --rm -v "${PWD}":/config:Z --device=/dev/ttyUSB0 -it esphome/esphome beer_button.yaml run
 ```
 
-If everything worked correctly, the ESPHome can now be flashed over-the-air and does not need to be connected via USB to the computer anymore (except perhaps for power).
+If everything worked correctly, the ESPHome can now be flashed over-the-air and does not need to be connected via USB to the computer anymore.
 
 
 ## The wiring and soldering part
 
-Coming soon.
+Beer button schema:
+
+![Beer Button Schema](/images/beerbutton.png)
 
