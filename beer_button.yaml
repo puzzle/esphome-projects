@@ -1,29 +1,41 @@
 esphome:
-  name: beer_button
-  platform: ESP8266
+  name: beer-button
+  friendly_name: Beer Button
+
+esp8266:
   board: nodemcu
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  domain: !secret wifi_domain
-
+# Enable logging
 logger:
 
+# Enable Home Assistant API
 api:
-  password: !secret beer_button_api_password
+  encryption:
+    key: "JXRSk/7pq9nhzC83F6F7sMq/uo16bp/4PQ4ECFZ2lfM="
 
 ota:
-  password: !secret beer_button_api_password
+  - platform: esphome
+    password: "372677b1240db2c1db48e9f064e5673a"
+
+wifi:
+  ssid: iotwifi
+  password: SkyxMuj4
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Beer-Button Fallback Hotspot"
+    password: "ZL2AJGaarzMm"
+
+captive_portal:
 
 text_sensor:
-- platform: version
-  name: "Beer Button ESPHome Version"
+  - platform: version
+    name: "Beer Button ESPHome Version"
 
 binary_sensor:
-- platform: gpio
-  pin:
-    number: D2
-    mode: INPUT_PULLUP
-    inverted: True
-  name: "Beer Button"
+  - platform: gpio
+    pin:
+      number: D2
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Beer Button"
