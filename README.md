@@ -5,16 +5,15 @@ This repository contains the documentation and code for building a "beer button"
 
 ## Flashing a NodeMCU
 
-1. Provide a `secrets.yaml` file using `secrets.yaml.example` as a guideline
-2. Clone this repository, `cd` into its directory
-3. Connect a NodeMCU to your computer using a Micro USB cable
-4. Flash the NodeMCU using the following command or one of [ESPHome](https://esphome.io)'s own Getting Started guides:
+1. Go to [the ESPHome page](https://esphome.puzzle.ch/) and open the correct config.
+2. Hit `INSTALL`->`Manual Download`. The firmware gets compiled and the binary downloaded to your computer.
+3. Connect the ESP to your computer using *a data capable* USB cable.
+4. Go to [ESP Web Tools](https://web.esphome.io/).
+5. Hit `connect`, select your ESP.
+6. Upload the binary that just got downloaded to your PC and flash it.
 
-```bash
-podman run --rm -v "${PWD}":/config:Z --device=/dev/ttyUSB0 -it esphome/esphome beer_button.yaml run
-```
-
-If everything worked correctly, the ESPHome can now be flashed over-the-air and does not need to be connected via USB to the computer anymore.
+If the Wi-Fi network the ESP gets connected to can mDNS to the Host running the ESPHome page,
+the ESP can now be flashed over-the-air and does not need to be connected via USB to the computer anymore.
 
 
 ## The wiring and soldering part
