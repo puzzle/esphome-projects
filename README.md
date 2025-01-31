@@ -23,3 +23,6 @@ Beer button schema:
 
 ![Beer Button Schema](/images/beerbutton.png)
 
+Beer light schema:
+
+![Beer Light Schema](/images/beerlight.png)
