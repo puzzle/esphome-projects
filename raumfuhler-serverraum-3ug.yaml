@@ -1,0 +1,55 @@
+esphome:
+  name: raumfuhler-serverraum-3ug
+  friendly_name: Raumfühler Serverraum 3.UG
+
+esp8266:
+  board: esp01_1m
+
+# Enable logging
+logger:
+
+prometheus:
+
+ota:
+  - platform: esphome
+    password: !secret datacenter_3ug_ota_pw
+
+wifi:
+  ssid: !secret iot_wifi_ssid
+  password: !secret iot_wifi_psk
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Raumfuhler-Serverraum-3Ug"
+    password: !secret datacenter_3ug_fallback_ap_pw
+
+captive_portal:
+
+i2c:
+  sda: GPIO4
+  scl: GPIO5
+
+web_server:
+  port: 9123
+
+bme680_bsec:
+  address: 0x77
+
+sensor:
+  - platform: bme680_bsec
+    temperature:
+      name: "Serverraum 3.UG Temperatur"
+      filters:
+        - calibrate_linear:
+            - 26.0 -> 23.0
+            - 6.2 -> 4.1
+    pressure:
+      name: "Serverraum 3.UG Luftdruck"
+    humidity:
+      name: "Serverraum 3.UG Luftfeuchtigkeit"
+    iaq:
+      name: "Serverraum 3.UG IAQ"
+    co2_equivalent:
+      name: "Serverraum 3.UG CO2"
+    breath_voc_equivalent:
+      name: "Serverraum 3.UG VOC"
