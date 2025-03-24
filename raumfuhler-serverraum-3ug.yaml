@@ -26,7 +26,7 @@ ethernet:
 
 i2c:
   sda: GPIO4
-  scl: GPI32
+  scl: GPIO32
 
 web_server:
   port: 9123
