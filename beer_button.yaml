@@ -2,8 +2,10 @@ esphome:
   name: beer-button
   friendly_name: Beer Button
 
-esp8266:
-  board: nodemcu
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
 
 # Enable logging
 logger:
@@ -32,10 +34,18 @@ text_sensor:
   - platform: version
     name: "Beer Button ESPHome Version"
 
+light:
+  - platform: neopixelbus
+    type: GRB
+    variant: WS2811
+    pin: GPIO48
+    num_leds: 1
+    name: "NeoPixel Light"
+
 binary_sensor:
   - platform: gpio
     pin:
-      number: D2
+      number: GPIO11
       mode: INPUT_PULLUP
       inverted: True
     name: "Beer Button"
