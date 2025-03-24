@@ -2,8 +2,10 @@ esphome:
   name: raumfuhler-serverraum-3ug
   friendly_name: Raumfühler Serverraum 3.UG
 
-esp8266:
-  board: esp01_1m
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
 
 # Enable logging
 logger:
@@ -14,20 +16,17 @@ ota:
   - platform: esphome
     password: !secret datacenter_3ug_ota_pw
 
-wifi:
-  ssid: !secret iot_wifi_ssid
-  password: !secret iot_wifi_psk
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Raumfuhler-Serverraum-3Ug"
-    password: !secret datacenter_3ug_fallback_ap_pw
-
-captive_portal:
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk_mode: GPIO17_OUT
+  phy_addr: 0
+  power_pin: GPIO5
 
 i2c:
   sda: GPIO4
-  scl: GPIO5
+  scl: GPI32
 
 web_server:
   port: 9123
