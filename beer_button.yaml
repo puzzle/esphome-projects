@@ -13,27 +13,24 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: !secret beerbutton_api_encryption_key
+    key: "1cnCIUwEcfZfabl+UXd59iXrW456ihVdG0fx2arCheQ="
 
 ota:
   - platform: esphome
-    password: !secret beerbutton_ota_pw
+    password: "aba7dcf60528b51dab0f593dccd75571"
 
 wifi:
   ssid: !secret iot_wifi_ssid
   password: !secret iot_wifi_psk
 
+
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Beer-Button Fallback Hotspot"
-    password: !secret beerbutton_fallback_ap_pw
+    ssid: "C3-Tester Fallback Hotspot"
+    password: "tMSMG6Cw0Oy2"
 
 captive_portal:
-
-text_sensor:
-  - platform: version
-    name: "Beer Button ESPHome Version"
-
+    
 light:
   - platform: neopixelbus
     type: GRB
