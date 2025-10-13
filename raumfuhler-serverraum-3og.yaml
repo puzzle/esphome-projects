@@ -2,8 +2,10 @@ esphome:
   name: raumfuhler-serverraum-3og
   friendly_name: Raumfühler Serverraum 3.OG
 
-esp8266:
-  board: esp01_1m
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
 
 # Enable logging
 logger:
@@ -14,29 +16,30 @@ ota:
   - platform: esphome
     password: !secret datacenter_3og_ota_pw
 
-wifi:
-  ssid: !secret iot_wifi_ssid
-  password: !secret iot_wifi_psk
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk:
+    pin: GPIO17
+    mode: CLK_OUT
+  phy_addr: 0
+  power_pin: GPIO12
 
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Raumfuhler-Serverraum-3Og"
-    password: !secret datacenter_3og_fallback_ap_pw
-
-captive_portal:
 
 i2c:
-  sda: GPIO4
-  scl: GPIO5
+  sda: GPIO2
+  scl: GPIO1
 
 web_server:
   port: 9123
 
-bme680_bsec:
+bme68x_bsec2_i2c:
   address: 0x77
+  model: bme680
 
 sensor:
-  - platform: bme680_bsec
+  - platform: bme68x_bsec2
     temperature:
       name: "Serverraum 3.OG Temperatur"
       filters:
