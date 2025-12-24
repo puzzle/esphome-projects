@@ -2,8 +2,10 @@ esphome:
   name: beer-light
   friendly_name: Beer Light
 
-esp8266:
-  board: nodemcu
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
 
 # Enable logging
 logger:
@@ -34,16 +36,16 @@ text_sensor:
 
 output:
   - platform: gpio
-    pin: D0
+    pin: GPIO7
     id: gpio_d0
   - platform: gpio
-    pin: D1
+    pin: GPIO8
     id: gpio_d1
   - platform: gpio
-    pin: D2
+    pin: GPIO20
     id: gpio_d2
   - platform: gpio
-    pin: D3
+    pin: GPIO21
     id: gpio_d3
 
 light:
