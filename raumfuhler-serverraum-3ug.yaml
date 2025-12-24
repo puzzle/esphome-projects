@@ -35,6 +35,7 @@ web_server:
 
 bme68x_bsec2_i2c:
   address: 0x77
+  model: bme680
 
 sensor:
   - platform: bme68x_bsec2
