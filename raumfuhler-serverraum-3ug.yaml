@@ -5,7 +5,7 @@ esphome:
 esp32:
   board: esp32dev
   framework:
-    type: arduino
+    type: esp-idf
 
 # Enable logging
 logger:
@@ -33,11 +33,11 @@ i2c:
 web_server:
   port: 9123
 
-bme680_bsec:
+bme68x_bsec2_i2c:
   address: 0x77
 
 sensor:
-  - platform: bme680_bsec
+  - platform: bme68x_bsec2
     temperature:
       name: "Serverraum 3.UG Temperatur"
       filters:
