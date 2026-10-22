@@ -7,6 +7,10 @@ esp32:
   framework:
     type: esp-idf
 
+api:
+  encryption:
+    key: !secret env_sensor_api_pw
+
 # Enable logging
 logger:
 
@@ -55,3 +59,19 @@ sensor:
       name: "Serverraum 3.UG CO2"
     breath_voc_equivalent:
       name: "Serverraum 3.UG VOC"
+
+
+  # --- diagnostics (also visible in Prometheus) ---
+  - platform: uptime
+    name: "Serverraum 3.UG Uptime"
+  - platform: debug
+    free:
+      id: heap_free
+      name: "Serverraum 3.UG Heap frei"
+    block:
+      id: heap_block
+      name: "Serverraum 3.UG Heap grösster Block"
+    loop_time:
+      id: loop_time_max
+      name: "Serverraum 3.UG Loop-Zeit max"
+
