@@ -6,9 +6,89 @@ esp32:
   board: esp32dev
   framework:
     type: esp-idf
+    advanced:
+      include_builtin_idf_components: ["fatfs", "spiffs"]
+      disable_vfs_support_termios: false
+      disable_vfs_support_select: false
+      disable_vfs_support_dir: false
+    sdkconfig_options:
+      CONFIG_FATFS_LFN_STACK: "y"
 
-# Enable logging
+external_components:
+  - source: github://n-serrette/esphome_sd_card
+    components: [sd_mmc_card]
+
+api:
+  encryption:
+    key: !secret env_sensor_api_pw
+
 logger:
+  level: DEBUG
+  on_message:
+    level: DEBUG
+    then:
+      - lambda: |-
+          if (id(log_buf).size() > 8192) {
+            id(log_dropped)++;
+            return;
+          }
+          static const char LV[] = "NEWICDVV";
+          std::string &b = id(log_buf);
+          auto now = id(ha_time).now();
+          if (now.is_valid()) {
+            b += now.strftime("%Y-%m-%d %H:%M:%S");
+          } else {
+            char up[24];
+            uint32_t ms = millis();
+            snprintf(up, sizeof(up), "+%u.%03u", (unsigned) (ms / 1000), (unsigned) (ms % 1000));
+            b += up;
+          }
+          b += ' ';
+          b += LV[(level >= 0 && level < 8) ? level : 7];
+          b += " [";
+          b += tag;
+          b += "] ";
+          for (const char *p = message; *p; p++) {
+            if (*p == 0x1b) {
+              while (*p && *p != 'm') p++;
+              if (!*p) break;
+              continue;
+            }
+            b += *p;
+          }
+          b += '\n';
+
+globals:
+  - id: log_buf
+    type: std::string
+  - id: log_dropped
+    type: int
+    initial_value: '0'
+  - id: csv_day
+    type: std::string
+  - id: eth_down_since        # millis() at last disconnect, 0 = none pending
+    type: uint32_t
+    initial_value: '0'
+  - id: eth_disc_count        # disconnects since boot
+    type: int
+    initial_value: '0'
+
+debug:
+  update_interval: 60s       # also logs reset reason + crash info at boot
+
+time:
+  - platform: homeassistant
+    id: ha_time
+    timezone: Europe/Zurich
+    on_time:
+      - seconds: 0
+        minutes: 0
+        hours: 3
+        then:
+          - sd_mmc_card.delete_file:
+              path: !lambda |-
+                auto t = ESPTime::from_epoch_local(id(ha_time).now().timestamp - 30 * 86400);
+                return "/log_" + t.strftime("%Y-%m-%d") + ".txt";
 
 prometheus:
 
@@ -17,6 +97,7 @@ ota:
     password: !secret datacenter_3og_ota_pw
 
 ethernet:
+  id: eth
   type: LAN8720
   mdc_pin: GPIO23
   mdio_pin: GPIO18
@@ -25,14 +106,84 @@ ethernet:
     mode: CLK_OUT
   phy_addr: 0
   power_pin: GPIO12
-
+  on_disconnect:
+    - lambda: |-
+        id(eth_down_since) = millis();
+        id(eth_disc_count)++;
+    - logger.log:
+        level: WARN
+        tag: net
+        format: "EVENT eth_DISCONNECTED #%d uptime=%us"
+        args: ['id(eth_disc_count)', '(unsigned) (millis() / 1000)']
+    - script.execute: flush_log
+  on_connect:
+    - logger.log:
+        level: INFO
+        tag: net
+        format: "EVENT eth_connected uptime=%us outage=%u ms disconnects=%d"
+        args:
+          - '(unsigned) (millis() / 1000)'
+          - 'id(eth_down_since) ? (unsigned) (millis() - id(eth_down_since)) : 0u'
+          - 'id(eth_disc_count)'
+    - lambda: 'id(eth_down_since) = 0;'
+    - script.execute: flush_log
 
 i2c:
-  sda: GPIO2
-  scl: GPIO1
+  sda: GPIO13
+  scl: GPIO16
 
 web_server:
   port: 9123
+
+sd_mmc_card:
+  id: sd_card
+  mode_1bit: true
+  clk_pin: GPIO14
+  cmd_pin: GPIO15
+  data0_pin: GPIO2
+
+script:
+  - id: flush_log
+    mode: single
+    then:
+      - if:
+          condition:
+            lambda: 'return !id(sd_card)->is_failed() && !id(log_buf).empty();'
+          then:
+            - sd_mmc_card.append_file:
+                path: !lambda |-
+                  auto now = id(ha_time).now();
+                  if (!now.is_valid()) return std::string("/log_nosync.txt");
+                  return "/log_" + now.strftime("%Y-%m-%d") + ".txt";
+                data: !lambda |-
+                  std::string out;
+                  out.swap(id(log_buf));
+                  if (id(log_dropped) > 0) {
+                    out += "!!! " + std::to_string(id(log_dropped)) + " log lines dropped (buffer full)\n";
+                    id(log_dropped) = 0;
+                  }
+                  return std::vector<uint8_t>(out.begin(), out.end());
+
+interval:
+  - interval: 10s
+    then:
+      - script.execute: flush_log
+
+  # Heartbeat: gaps in these lines = device hung/rebooted; continuous lines = device alive
+  - interval: 60s
+    then:
+      - logger.log:
+          level: INFO
+          tag: hb
+          format: "up=%us eth=%s ip=%s heap=%.0f block=%.0f loop_max=%.0fms disconnects=%d"
+          args:
+            - '(unsigned) (millis() / 1000)'
+            - 'id(eth)->is_connected() ? "up" : "DOWN"'
+            - 'id(eth_ip).state.c_str()'
+            - 'id(heap_free).state'
+            - 'id(heap_block).state'
+            - 'id(loop_time_max).state'
+            - 'id(eth_disc_count)'
 
 bme68x_bsec2_i2c:
   address: 0x77
@@ -56,3 +207,62 @@ sensor:
       name: "Serverraum 3.OG CO2"
     breath_voc_equivalent:
       name: "Serverraum 3.OG VOC"
+
+  # --- diagnostics (also visible in Prometheus) ---
+  - platform: uptime
+    name: "Serverraum 3.OG Uptime"
+  - platform: debug
+    free:
+      id: heap_free
+      name: "Serverraum 3.OG Heap frei"
+    block:
+      id: heap_block
+      name: "Serverraum 3.OG Heap grösster Block"
+    loop_time:
+      id: loop_time_max
+      name: "Serverraum 3.OG Loop-Zeit max"   # spikes = SD write stalls
+  - platform: template
+    name: "Serverraum 3.OG Ethernet Disconnects"
+    lambda: 'return id(eth_disc_count);'
+    update_interval: 60s
+    accuracy_decimals: 0
+    state_class: total_increasing
+
+  - platform: sd_mmc_card
+    type: used_space
+    name: "Serverraum 3.OG SD belegt"
+    unit_of_measurement: MB
+    filters:
+      - delta: 1048576
+      - lambda: return sd_mmc_card::convertBytes(x, sd_mmc_card::MemoryUnits::MegaByte);
+  - platform: sd_mmc_card
+    type: total_space
+    name: "Serverraum 3.OG SD gesamt"
+    unit_of_measurement: GB
+    filters:
+      - delta: 1048576
+      - lambda: return sd_mmc_card::convertBytes(x, sd_mmc_card::MemoryUnits::GigaByte);
+  - platform: sd_mmc_card
+    type: free_space
+    name: "Serverraum 3.OG SD frei"
+    unit_of_measurement: GB
+    filters:
+      - delta: 1048576
+      - lambda: return sd_mmc_card::convertBytes(x, sd_mmc_card::MemoryUnits::GigaByte);
+
+text_sensor:
+  - platform: sd_mmc_card
+    sd_card_type:
+      name: "Serverraum 3.OG SD Typ"
+  - platform: ethernet_info
+    ip_address:
+      id: eth_ip
+      name: "Serverraum 3.OG IP"
+      on_value:                         # catches DHCP lease/address changes
+        - logger.log:
+            level: INFO
+            tag: net
+            format: "EVENT ip_now=%s"
+            args: ['x.c_str()']
+    mac_address:
+      name: "Serverraum 3.OG MAC"
